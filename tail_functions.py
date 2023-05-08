@@ -81,4 +81,24 @@ def x_min_pred(data):
     x_min_pred=x[ind1]
     return es1,x_min_pred
 
+#As above function but chooses x_min only within pre-chosen interval [x_l,x_u]
+def x_min_pred_interval(data,x_l,x_u):
+    data=np.sort(data)
+    if (x_l>=data[0] )& (x_u<data[-2]):
+        es1=[]
+        x,y=tail(data)
+        ind=np.where((x_l<=x) & (x<=x_u))[0]
+        for i in ind:
+            xs,ys,a,b=get_power_law_fit(data,x[i])
+            y_norm=y[i]
+            yn=y[i:]/y_norm
+            ysn=ys/y_norm
+            e1=KS_stat(yn,ysn)
+            es1.append(e1)
+        ind1=np.argmin(es1)+ind[0]
+        x_min_pred=x[ind1]
+        return es1,x_min_pred
+    else:
+        return 'Interval chosen out of range'
+
 ############################################################################
