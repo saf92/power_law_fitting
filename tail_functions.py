@@ -49,17 +49,24 @@ def mle_pl_beta(x,x_min):
 
 #Fit's the power law with MLE outputting parameters, predictions and index for inputted
 #minimum x value for sample fit
-def get_power_law_fit(data,x_min):
-    data_s=np.sort(data)
-    x,y=tail(data_s)
-    ind=find_nearest(data_s,x_min)
-    ind1=find_nearest(x,x_min)
-    x_sample=data_s[ind:]
-    x1=x[ind1:]
-    b=mle_pl_beta(x_sample,x_min)
-    a=y[ind1]*x_min**b
-    y_pred=power_law(x1,a,-b)
-    return x1,y_pred,a,b
+def get_power_law_fit(sample,x_m):
+    pl_sample=sample[sample>=x_m]
+    y_n=len(pl_sample)/len(sample)
+    x,y=tail(pl_sample)
+    beta=mle_pl_beta(pl_sample,x_m)
+    alpha=y_n*x_m**beta
+    y_pred=power_law(x,alpha,-beta)
+    return x,y_pred,alpha,beta
+
+def get_power_law_fit1(sample,x_m):
+    pl_sample=sample[sample>=x_m]
+    ns=len(pl_sample)
+    y_n=ns/len(sample)
+    x,y=tail(pl_sample)
+    beta=(ns-1)/ns*mle_pl_beta(pl_sample,x_m)
+    alpha=y_n*x_m**beta
+    y_pred=power_law(x,alpha,-beta)
+    return x,y_pred,alpha,beta
 
 #KS statistic
 def KS_stat(y,y_pred):
@@ -101,4 +108,65 @@ def x_min_pred_interval(data,x_l,x_u):
     else:
         return 'Interval chosen out of range'
 
+#Goodness of fit test for power law
+def get_p_val(x_m,b,K,N,n):
+    Ks=[]
+    for i in range(N):
+        sample=pareto.rvs(pareto_fit_vec[3], scale=x_m, size=n)
+        x,y=tail(sample)
+        vec=get_power_law_fit(sample,x_m)
+        Ks.append(KS_stat(y,vec[1]))
+    p=len(np.where(Ks>K)[0])/N
+    return p
+
 ############################################################################
+
+#Linear regression fit - zero intercept
+#https://math.stackexchange.com/questions/3297060/linear-regression-without-intercept-formula-for-slope
+
+def pl_reg_fit(sample,x_m):
+    pl_sample=sample[sample>=x_m]
+    y_n=len(pl_sample)/len(sample)
+    x,y=tail(pl_sample)
+    x_lin_reg=np.log10(x/x_m)
+    y_lin_reg=np.log10(y)
+    b=np.sum(x_lin_reg*y_lin_reg)/np.sum(x_lin_reg*x_lin_reg)
+    beta=-b
+    alpha=y_n*x_m**(beta)
+    y_reg_pred=alpha*x**(-beta)
+    return [x,y_reg_pred,alpha,beta]
+
+#Expected mean function linear regression
+def lr_mean_est(n,g):
+    return np.log((np.exp(1)-(np.log(n))**(g)/n))
+
+def pl_reg_fit1(sample,x_m,g):
+    pl_sample=sample[sample>=x_m]
+    n=len(pl_sample)
+    y_n=n/len(sample)
+    x,y=tail(pl_sample)
+    x_lin_reg=np.log10(x/x_m)
+    y_lin_reg=np.log10(y)
+    b=np.sum(x_lin_reg*y_lin_reg)/np.sum(x_lin_reg*x_lin_reg)
+    beta=-b/lr_mean_est(n,g)
+    alpha=y_n*x_m**(beta)
+    y_reg_pred=alpha*x**(-beta)
+    return [x,y_reg_pred,alpha,beta]
+
+##############################################################################
+
+#Fit power law with non-linear regression
+
+#b free param, a = P(X>x_m)*x_m^b
+def min_non_lin_pl(b,x_m,x,y):
+    return y-power_law(x,x_m**b,-b)
+
+def pl_nlr_fit(sample,b0,x_m):
+    pl_sample=sample[sample>=x_m]
+    y_n=len(pl_sample)/len(sample)
+    x,y=tail(pl_sample)
+    res=least_squares(min_non_lin_pl,b0,args=(x_m,x,y))
+    b=res.x[0]
+    a=y_n*x_m**b
+    y_pred=power_law(x,a,-b)
+    return x,y_pred,a,b
