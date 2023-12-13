@@ -58,6 +58,7 @@ def get_power_law_fit(sample,x_m):
     y_pred=power_law(x,alpha,-beta)
     return x,y_pred,alpha,beta
 
+#This slightly adjusted function fits the unbiased MLE
 def get_power_law_fit1(sample,x_m):
     pl_sample=sample[sample>=x_m]
     ns=len(pl_sample)
@@ -140,6 +141,7 @@ def pl_reg_fit(sample,x_m):
 def lr_mean_est(n,g):
     return np.log((np.exp(1)-(np.log(n))**(g)/n))
 
+#Linear regression fit, approximately unbiased
 def pl_reg_fit1(sample,x_m,g):
     pl_sample=sample[sample>=x_m]
     n=len(pl_sample)
