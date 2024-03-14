@@ -1,9 +1,8 @@
-# power_law_fitting
 
-Fit the power law for continuous distribution in python using methods from Clauset et al. 
-https://arxiv.org/pdf/0706.1062.pdf;
+# Linear Regression for Power Law Distribution Fitting
 
-Note this has been done much more extensively with in particular 
-the $x_m$ parameter (cut off for power law) fitted a lot faster in the power law package https://github.com/jeffalstott/powerlaw
+The Python code that generated the plots in the paper [Linear Regression for Power Law Distribution Fitting](https://arxiv.org/abs/2312.13229) 
+is found in the file errors_regression.ipynb. This paper researched into the bias that results from fitting the continous power law comparing linear 
+regression to MLE.
 
-![alt text](https://github.com/saf92/power_law_fitting/blob/main/plots/pl_fit.png)
+![alt text](https://github.com/saf92/power_law_fitting/blob/main/plots/piecewise_Lomax.png)
